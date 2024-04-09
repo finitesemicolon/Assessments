@@ -1,0 +1,49 @@
+-- 1st table 1st question
+
+select CustomerID,DataUsed from customerinteractions
+where DataUsed > (select Avg(DataUsed) from customerinteractions where Month = 'March');
+-- avg data used in march
+-- select Avg(DataUsed) from customerinteractions where Month = 'March';
+
+-- 2nd question
+select CustomerID from customerinteractions
+where (select sum(CallDuration) from customerinteractions where Month = 'March') > (select sum(CallDuration) from customerinteractions where Month = 'February');
+
+--select sum(CallDuration) from customerinteractions where Month = 'February';
+
+-- 3 question
+
+-- 2nd Table
+-- Calculate the total sales for products in type 1 to gauge its market demand
+select * from quarterlysales;
+-- 4
+select sum(TotalSalesAmount) from quarterlysales where ProductTypeID = 1;
+-- 5
+select ProductTypeID,sum(TotalSalesAmount) as sales from quarterlysales
+where Quarter = 'Q1' group by ProductTypeID order by sales desc limit 1;
+
+-- 6 calc the avg sales per unit price sold in q2 2024 for product type 1
+alter table quarterlysales insert column avgprice decimal(10,2);
+select ProductTypeID from quarterlysales;
+
+-- 7 
+select * from sectorenergyconsumption;
+-- identify regions with above average renewable energy (solar and wind) usage in  mar 2024
+select distinct region from sectorenergyconsumption
+where EnergySource in ('Solar','Wind') and Month = 'March';
+
+-- 8
+select Sector,Month,ConsumptionKWh from sectorenergyconsumption order by Sector,ConsumptionKWh;
+
+-- 9 compare the fossil fuels to renewable in feb 2024
+select EnergySource,ConsumptionKWh from sectorenergyconsumption
+where Month = 'February' order by EnergySource;
+
+-- 10 identify customers with higher than avg score feedback scores or claim frequencies
+-- are not under investigation
+select * from insuranceactivities;
+select CustomerName,FeedbackScore from insuranceactivities
+where Investigation = 'No' and FeedbackScore > (select avg(FeedbackScore) from insuranceactivities);
+
+-- 11
+-- 12
