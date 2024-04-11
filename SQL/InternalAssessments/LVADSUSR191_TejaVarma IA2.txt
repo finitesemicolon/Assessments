@@ -1,0 +1,74 @@
+-- 1st maintainence cost in mar 2024 exceeding monthly avg
+
+select machine_id,cost from l1_maintenance_records
+where cost > (select Avg(cost) from l1_maintenance_records)
+and month(maintenance_date) = 3;
+
+-- 2nd which type of maintainence was performed more frequently in March 2024
+
+select maintenance_type,count(maintenance_type) as count from l1_maintenance_records
+group by maintenance_type
+limit 1;
+
+-- 3rd question which techinicaian performed more tasks and which one had high avg cost
+
+select technician_name,count(maintenance_id)as tasks,avg(cost)  from l1_maintenance_records
+group by technician_name;
+
+-- 4th q avg reduction in incidents before and after the updates for each product
+
+
+select product_id,floor(avg(incident_count_pre_update-incident_count_post_update)) as reduction
+from l2_updates
+group by product_id
+order by reduction desc;
+
+-- 5th highest increase in user feedbak score after the update
+
+select update_id from l2_updates
+where user_feedback_score in 
+(select max(user_feedback_score) from l2_updates where incident_count_post_update > incident_count_pre_update);
+
+-- 6th one 
+-- NA
+
+-- 7th one (patients,visits,treatments,facilities) patientname,facility visited, reason, outcome
+
+select p.patient_name,f.facility_name,v.reason_for_visit,t.outcome
+from l3_patients as p
+join l3_visits as v using (patient_id)
+join l3_treatments as t using (visit_id)
+join l3_facilities as f using (facility_id)
+where month(visit_date) = 3;
+
+-- 8th one highest no of emergency visits in march 2024
+
+select f.facility_name,count(v.visit_id) as visits from l3_visits as v
+join l3_facilities as f
+where reason_for_visit = 'Emergency' and month(visit_date) = 3
+group by f.facility_name;
+
+-- 9th one which insurance providers patients has more compicated treatement in the first quarter of 2024
+
+select insurance_provider from l3_patients as p
+join l3_visits as v using (patient_id)
+join l3_treatments as t using (visit_id)
+where t.outcome = 'Complicated';
+
+-- 10th q using a correlated subquery (product name,category,quantity sold) for each category in mar 2024
+
+select product_name,category,quantity from l4_products
+join l4_sales using(product_id)
+join l4_stores using(store_id)
+order by quantity desc;
+
+-- 11 th one create a view with sales data and store information and calculate total sales in each region
+-- NA 
+
+-- 12 th one full outer join of products and sales,which products have not been sold in any region and
+-- which region did not sell atleast one product from each category
+
+select category from l4_sales
+full join l4_products using (product_id)
+where month(sale_date) = '3'
+group by category;
