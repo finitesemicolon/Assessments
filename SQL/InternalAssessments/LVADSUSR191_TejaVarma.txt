@@ -1,0 +1,115 @@
+-- 1
+select p.product_category, avg(s.sales_amount) from sales_records s
+join products as p using (product_id)
+where datediff(now(),sales_date) <= 30
+group by p.product_category;
+
+-- 2
+select product_id,sum(sales_amount) as sales,rank() over (partition by product_id) as rnk
+from sales_records s
+group by product_id;
+
+-- 3 percentage contribution
+
+select customer_id,sum(sales_amount),cume_dist() over (partition by customer_id)
+from sales_records group by customer_id;
+ 
+-- 4
+
+select customer_id,
+case when month(sales_date) in (select  distinct month(sales_date) from sales_records) then "Consistent buyers"	
+	else "Occasional Buyers"
+    end as type_of_buyer
+from sales_records;
+
+-- LAB 2
+
+-- 5
+select flight_id,concat (departure_airport,' to ',arrival_airport) as route, avg (base_price) from flights group by flight_id;
+
+-- 6
+select f.flight_id , f.departure_date, count(t.ticket_id) from tickets t
+join flights f using (flight_id)
+where datediff(now(),departure_date) < 30
+group by flight_id;
+
+-- 7
+select passenger_name,sum(ticket_price) as total_amount_spent ,frequent_flyer_status from passengers
+join tickets using (passenger_id)
+group by passenger_id
+order by total_amount_spent desc limit 5;
+
+-- 8 the month with the highest no of tickets sold and also total tickets sold in that month
+
+select month(ticket_date)as month,count(*) as tickets_sold from tickets
+group by month(ticket_date)
+order by tickets_sold desc limit 1;
+
+
+-- LAB 3
+
+-- 9 avg playtime in min per player  for each game
+
+select player_id,avg((play_date - registration_date)*24*60)as playtime_min from players p -- days (1 day = 24 hours, 1 hour = 60 min)
+join playerscores using(player_id)
+join games using (game_id)
+group by player_id;
+
+
+-- 10 top 3 games with highest no of players, total no of players
+
+select game_id,count(player_id) as Players from playerscores
+group by game_id;
+
+-- 11
+select game_id,avg(score) as avg_score,max(score) as max_score,count(player_id) as Players from playerscores
+group by game_id;
+
+-- 12 player churn : players who havent played in last 30 days but played before. player_id, registration_date,last_activity
+select * from players p
+join playerscores using(player_id)
+join games using (game_id)
+where datediff(now(),play_date)>30
+and (select * from playerscores where play_date > datediff(now(),);
+
+
+-- LAB 4
+-- 13
+select doctor_id, sum(cost) as cost from treatments group by doctor_id order by cost desc limit 5;
+
+-- 14
+select treatment_name, sum(cost) as revenue, cume_dist() over (partition by treatment_name)
+from treatments group by treatment_name
+order by revenue desc;
+
+-- 15
+select patient_id,patient_name, admission_date, discharge_date from patients
+where patient_id in (select patient_id from patients where (discharge_date - admission_date) > 30)
+order by admission_date;
+
+-- 16
+select gender,diagnosis,round(avg(discharge_date - admission_date)) as LOS from patients group by gender,diagnosis;
+
+
+-- LAB 5
+-- 17
+select department,semester,avg(grade) as avg_grade from enrollments
+join courses using (course_id)
+group by department,semester;
+
+-- 18
+select major,count(*) as count from students group by major order by count desc;
+
+-- 19
+select s.student_id,s.student_name,e.semester,sum(c.credits) as credits
+from students s
+join enrollments e using (student_id)
+join courses c using (course_id)
+where credits >50
+group by e.semester;
+
+-- 20
+select distinct(course_name),count(enrollment_id) as Total_enrollments from students s
+join enrollments e using (student_id)
+join courses c using (course_id)
+group by course_name;
